@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.datasets import load_iris
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedShuffleSplit
 
 SEED = 123
 
@@ -12,18 +12,16 @@ def load_data():
     X = data["data"]
     y = data["target"]
 
-    print(data["target_names"])
+    # print(data["target_names"])
 
     return X, y
 
 
-def split_data(X, y, seed=SEED):
+def split_data(X, y, test_size=0.2, seed=SEED):
     """ """
-    skf = StratifiedKFold(random_state=seed)
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=seed)
+    for _, (train_index, test_index) in enumerate(sss.split(X, y)):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
 
-    index_1 = skf.split(X[:50], y[:50])
-    indices = index_1 + index_1 * 2 + index_1 * 3
-
-    train_idx, test_idx = indices
-
-    return X[train_idx], X[test_idx], y[train_idx], y[test_idx]
+    return X_train, X_test, y_train, y_test
