@@ -8,10 +8,23 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
 
         self.learningRate = learningRate
         self.max_epoch = max_epoch
+        self.X = X
+        self.y = y
 
         # What is this and how is it used?
+        # 4x3 array - each row corresponds to weights for a specific feature (4)
+        # each column corresponds to weights for a specific class (3 classes)
+        # weights are randomly initalized or set to small values close to zero, 
+        # but different methods for initialization can
+        # lead to different results, so the process of weight initalization is
+        # commonly explored / experimented with
+        
         self.weight = np.array(
-            [[0.1, 0.2, 0.3], [0.1, 0.2, 0.3], [0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]
+            [[0.1, 0.2, 0.3],
+            [0.1, 0.2, 0.3],
+            [0.1, 0.2, 0.3],
+            [0.1, 0.2, 0.3], 
+            [0.1, 0.2, 0.3]] # added an additional row of weights for bias
         )
 
     def one_hot_encoding(self, y):
@@ -44,7 +57,9 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         Calculates and returns the softmax function
         Note: np.exp is e to a power
         """
-        return np.exp(z) / np.sum(np.exp(z), axis=0)
+        # return np.exp(z) / np.sum(np.exp(z), axis=0)
+
+        return (np.exp(z).T / np.sum(np.exp(z),axis=1)).T 
 
     def fit(self, X, y):
         epochCount = 0

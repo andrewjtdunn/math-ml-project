@@ -24,4 +24,8 @@ def split_data(X, y, test_size=0.2, seed=SEED):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
 
+    # added column of 1's to train and test for bias
+    X_train = np.concatenate((X_train, np.ones((X_train.shape[0], 1))), axis = 1)
+    X_test = np.concatenate((X_test, np.ones((X_test.shape[0], 1))), axis = 1)
+
     return X_train, X_test, y_train, y_test
