@@ -1,6 +1,8 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 
+SEED = 123
+
 
 class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
     def __init__(self, X, y, learningRate=0.005, max_epoch=3000):
@@ -10,22 +12,25 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         self.max_epoch = max_epoch
 
         # What is this and how is it used?
-        self.weight = np.array(
-            [[0.1, 0.2, 0.3], [0.1, 0.2, 0.3], [0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]
-        )
+        # self.weight = np.array(
+        #     [[0.1, 0.2, 0.3], [0.1, 0.2, 0.3], [0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]
+        # )
 
-    def one_hot_encoding(self, y):
+    def one_hot_encoding(self, y, c=3):
         """
         Generates one-hot encoding in a matrix
 
         Inputs:
             y (np array): array with multiple classes to predict
+            c (int): number of unique values in c
+                optional -- not calculating will speed up function
 
         Returns:
             y_encoded (np array): array with a column for every class, and
             a 1 for codings of that class, 0 otherwise
         """
-        c = len(np.unique(y))
+        if not c:
+            c = len(np.unique(y))
         y_encoded = np.zeros((len(y), c))
         y_encoded[np.arange(len(y)), y] = 1
 
@@ -52,52 +57,71 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         gradientE = []
         v_epochs = []
         totalError = []
+        loss_array = []
 
-        while epochCount < self.max_epoch:
-            Ti = self.one_hot_encoding(y)
-            Z = np.matmul(X, self.weight)
-            Oi = self.softmax(Z)
-            erro = self.function_cost_J(n, Ti, Oi)
-            gradient = self.cost_derivate_gradient(n, Ti, Oi, X)
-            self.weight = self.weight - self.learningRate * gradient
+        # define key matrix values
+        c = len(np.unique(y))
+        n, p = X.shape
+
+        # set seed in numpy random
+        np.random.seed(SEED)
+
+        # initialize weights at random values
+        self.weights = np.random.random((p, c))
+        self.bias = np.random.random(c)
+
+        for epoch in range(self.max_epoch):
+            # Ti = self.one_hot_encoding(y)
+            # Z = np.matmul(X, self.weight)
+            # Oi = self.softmax(Z)
+            # erro = self.function_cost_J(n, Ti, Oi)
+            # gradient = self.cost_derivate_gradient(n, Ti, Oi, X)
+            # self.weight = self.weight - self.learningRate * gradient
+            # if epochCount % 100 == 0:
+            #     totalError.append(erro)
+            #     gradientE.append(gradient)
+            #     v_epochs.append(epochCount)
+            #     print("Epoch ", epochCount, " Total Error:", "%.4f" % erro)
+
+            # epochCount += 1
+
+            z = X @ self.weights + self.bias
+            weights_gradient = (1 / n) * np.dot(
+                X.T, self.softmax(z) - self.one_hot_encoding(y, c)
+            )
+            bias_gradient = (1 / n) * np.sum(
+                self.softmax(z) - self.one_hot_encoding(y, c)
+            )
+
+            self.weights = self.weights - self.learningRate * weights_gradient
+            self.bias = self.bias - self.learningRate * bias_gradient
+
+            # Computing the loss
+            loss = -np.mean(np.log(self.softmax(z)[np.arange(len(y)), y]))
+            loss_array.append(loss)
+
             if epochCount % 100 == 0:
-                totalError.append(erro)
-                gradientE.append(gradient)
+                # totalError.append(erro)
+                # gradientE.append(gradient)
                 v_epochs.append(epochCount)
-                print("Epoch ", epochCount, " Total Error:", "%.4f" % erro)
+                print("Epoch: {} , Loss: {}".format(epoch, loss))
 
             epochCount += 1
 
         # self.show_err_graphic(v_epochs,totalError)
-        return self
+        # return self
+        print("{self.weights}")
+        print("{self.bias}")
 
-    def predict(self, X, y):
-        acc_set = acc_vers = acc_virg = 0
-        v_resp = []
-        n = len(y)
-        Z = np.matmul(X, self.weight)
-        Oi = self.softmax(Z)
-        prevision = np.argmax(Oi, axis=1)
-        # self.show_probability(Oi)
-        # print("")
-        procent = sum(prevision == y) / n
-        # print(" ID-Sample  | Class Classification |  Output |   Hoped output  ")
-        # for i in range(len(prevision)):
-        #     if(prevision[i] == 0): print(" id :",i,"          | Iris-Setosa        |  Output:",prevision[i],"   |",y[i])
-        #     elif(prevision[i] == 1): print(" id :",i,"          | Iris-Versicolour   |  Output:",prevision[i],"   |",y[i])
-        #     elif(prevision[i] == 2): print(" id :",i,"          | Iris-Virginica     |  Output:",prevision[i],"   |",y[i])
+    def predict(self, X, y_actual):
+        z = X @ self.weights + self.bias
+        y_hat = self.softmax(z)
 
-        for i in range(len(prevision)):
-            if (prevision[i] == y[i]) and (prevision[i] == 0):
-                acc_set += 1
-            elif (prevision[i] == y[i]) and (prevision[i] == 1):
-                acc_vers += 1
-            elif (prevision[i] == y[i]) and (prevision[i] == 2):
-                acc_virg += 1
+        # Returning highest probability class.
+        predictions = np.argmax(y_hat, axis=1)
 
-        correct = procent * 100
-        incorrect = 100 - correct
-        v_resp.append(correct)
-        v_resp.append(incorrect)
-        # self.accuracy_graphic(v_resp)
-        return "%.2f" % (correct), acc_set, acc_vers, acc_virg
+        # print accuracy
+        accuracy = np.sum(y_actual == predictions) / len(y_actual)
+        print(accuracy)
+
+        return predictions
