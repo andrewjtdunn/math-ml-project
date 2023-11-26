@@ -5,12 +5,10 @@ SEED = 123
 
 
 class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
-    def __init__(self, X, y, learningRate=0.005, max_epoch=3000):
+    def __init__(self, learning_rate=0.005, max_epoch=3000):
         """ """
 
-        self.X = X
-        self.y = y
-        self.learningRate = learningRate
+        self.learning_rate = learning_rate
         self.max_epoch = max_epoch
 
     def one_hot_encoding(self, y, c=3):
@@ -40,19 +38,18 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         """
         # return np.exp(z) / np.sum(np.exp(z), axis=0)
 
-        exp_mat = np.exp(z - np.max(z))
-        for i in range(len(z)):
-            exp_mat[i] /= np.sum(exp_mat[i])
+        exp_mat = np.exp(z - np.max(z)) / np.sum(
+            np.exp(z - np.max(z)), axis=1, keepdims=True
+        )
 
         return exp_mat
 
-    def fit(self):
-        epochCount = 0
+    def fit(self, X, y):
         loss_array = []
 
         # define key matrix values
-        c = len(np.unique(self.y))
-        n, p = self.X.shape
+        c = len(np.unique(y))
+        n, p = X.shape
 
         # set seed in numpy random
         np.random.seed(SEED)
@@ -62,26 +59,25 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         self.bias = np.random.random(c)
 
         for epoch in range(self.max_epoch):
-            z = self.X @ self.weights + self.bias
+            z = X @ self.weights + self.bias
 
             weights_gradient = (1 / n) * np.dot(
-                self.X.T, self.softmax(z) - self.one_hot_encoding(self.y, c)
-            )
-            bias_gradient = (1 / n) * np.sum(
-                self.softmax(z) - self.one_hot_encoding(self.y, c)
+                X.T, self.softmax(z) - self.one_hot_encoding(y, c)
             )
 
-            self.weights = self.weights - self.learningRate * weights_gradient
-            self.bias = self.bias - self.learningRate * bias_gradient
+            bias_gradient = (1 / n) * np.sum(
+                self.softmax(z) - self.one_hot_encoding(y, c)
+            )
+
+            self.weights = self.weights - self.learning_rate * weights_gradient
+            self.bias = self.bias - self.learning_rate * bias_gradient
 
             # Computing the loss
-            loss = -np.mean(np.log(self.softmax(z)[np.arange(len(self.y)), self.y]))
+            loss = -np.mean(np.log(self.softmax(z)[np.arange(len(y)), y]))
             loss_array.append(loss)
 
-            if epochCount % 100 == 0:
+            if epoch % 100 == 0:
                 print("Epoch: {} , Loss: {}".format(epoch, loss))
-
-            epochCount += 1
 
         # # Print the weights and bias, which are saved within the class
         # print(f"{self.weights=}")
