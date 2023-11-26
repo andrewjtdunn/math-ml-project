@@ -9,7 +9,14 @@ def standardize_matrix(X):
 
     for col_num in range(num_cols):
         X_col = X[:, col_num]
-        norm_matrix[:, col_num] = (X_col - np.mean(X_col)) / np.std(X_col)
+        col_std = np.std(X_col)
+
+        if col_std > 1e-8:
+            norm_matrix[:, col_num] = (X_col - np.mean(X_col)) / col_std
+
+        # if there's no standard deviation, just subtract the mean
+        else:
+            norm_matrix[:, col_num] = X_col - np.mean(X_col)
 
     # scaler = preprocessing.StandardScaler().fit(X)
     # X_scaled = scaler.transform(X)
