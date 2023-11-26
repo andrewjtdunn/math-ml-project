@@ -16,16 +16,16 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         # What is this and how is it used?
         # 4x3 array - each row corresponds to weights for a specific feature (4)
         # each column corresponds to weights for a specific class (3 classes)
-        # weights are randomly initalized or set to small values close to zero, 
+        # weights are randomly initalized or set to small values close to zero,
         # but different methods for initialization can
         # lead to different results, so the process of weight initalization is
         # commonly explored / experimented with
-        
+
         # self.weight = np.array(
         #     [[0.1, 0.2, 0.3],
         #     [0.1, 0.2, 0.3],
         #     [0.1, 0.2, 0.3],
-        #     [0.1, 0.2, 0.3], 
+        #     [0.1, 0.2, 0.3],
         #     [0.1, 0.2, 0.3]] # added an additional row of weights for bias
         # )
 
@@ -33,7 +33,7 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         fan_in = X.shape[1]  # Number of input units
         fan_out = len(np.unique(y))  # Number of output units (number of classes)
 
-        limit = np.sqrt(len(np.unique(y))/ (fan_in + fan_out))
+        limit = np.sqrt(len(np.unique(y)) / (fan_in + fan_out))
         self.weight = np.random.uniform(-limit, limit, size=(fan_in, fan_out))
 
     def one_hot_encoding(self, y):
@@ -69,7 +69,7 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         """
         # return np.exp(z) / np.sum(np.exp(z), axis=0)
 
-        return (np.exp(z).T / np.sum(np.exp(z),axis=1)).T 
+        return (np.exp(z).T / np.sum(np.exp(z), axis=1)).T
 
     def fit(self, X, y):
         epochCount = 0
@@ -113,12 +113,60 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         percent = sum(prediction == y) / n
         # print(" ID-Sample  | Class Classification |  Predicted |   Actual  ")
         for i in range(len(prediction)):
-            if(prediction[i] == 0): print(" id :",i,"    | Euthanasia |  Output:",prediction[i],"   |",y[i])
-            elif(prediction[i] == 1): print(" id :",i,"    | Adoption   |  Output:",prediction[i],"   |",y[i])
-            elif(prediction[i] == 2): print(" id :",i,"    | Foster     |  Output:",prediction[i],"   |",y[i])
-            elif(prediction[i] == 3): print(" id :",i,"    | Return     |  Output:",prediction[i],"   |",y[i])
-            elif(prediction[i] == 4): print(" id :",i,"    | Transfer   |  Output:",prediction[i],"   |",y[i])
-            elif(prediction[i] == 5): print(" id :",i,"    | Non-Outcome|  Output:",prediction[i],"   |",y[i])
+            if prediction[i] == 0:
+                print(
+                    " id :",
+                    i,
+                    "    | Euthanasia |  Output:",
+                    prediction[i],
+                    "   |",
+                    y[i],
+                )
+            elif prediction[i] == 1:
+                print(
+                    " id :",
+                    i,
+                    "    | Adoption   |  Output:",
+                    prediction[i],
+                    "   |",
+                    y[i],
+                )
+            elif prediction[i] == 2:
+                print(
+                    " id :",
+                    i,
+                    "    | Foster     |  Output:",
+                    prediction[i],
+                    "   |",
+                    y[i],
+                )
+            elif prediction[i] == 3:
+                print(
+                    " id :",
+                    i,
+                    "    | Return     |  Output:",
+                    prediction[i],
+                    "   |",
+                    y[i],
+                )
+            elif prediction[i] == 4:
+                print(
+                    " id :",
+                    i,
+                    "    | Transfer   |  Output:",
+                    prediction[i],
+                    "   |",
+                    y[i],
+                )
+            elif prediction[i] == 5:
+                print(
+                    " id :",
+                    i,
+                    "    | Non-Outcome|  Output:",
+                    prediction[i],
+                    "   |",
+                    y[i],
+                )
 
         for i in range(len(prediction)):
             if (prediction[i] == y[i]) and (prediction[i] == 0):
@@ -139,13 +187,22 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         v_resp.append(correct)
         v_resp.append(incorrect)
 
-        print("Percent Total Correct:", correct, 
-            "\nNum Correct Euth:", acc_euth, 
-            "\nNum Correct Adopt:", acc_adoption, 
-            "\nNum Correct Foster:", acc_foster,
-            "\nNum Correct Return to Owner:", acc_return,
-            "\nNum Correct Transfer:", acc_transfer,
-            "\nNum Correct No Outcome:", acc_no_outcome)
+        print(
+            "Percent Total Correct:",
+            correct,
+            "\nNum Correct Euth:",
+            acc_euth,
+            "\nNum Correct Adopt:",
+            acc_adoption,
+            "\nNum Correct Foster:",
+            acc_foster,
+            "\nNum Correct Return to Owner:",
+            acc_return,
+            "\nNum Correct Transfer:",
+            acc_transfer,
+            "\nNum Correct No Outcome:",
+            acc_no_outcome,
+        )
 
         # add confusion matrix
         unique_labels = np.unique(np.concatenate([y, prediction]))
@@ -154,7 +211,7 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         disp.plot()
         plt.show()
 
-        return 
+        return
 
         # acc_set = acc_vers = acc_virg = 0
         # v_resp = []
