@@ -1,5 +1,7 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
 
 class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
@@ -19,13 +21,20 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         # lead to different results, so the process of weight initalization is
         # commonly explored / experimented with
         
-        self.weight = np.array(
-            [[0.1, 0.2, 0.3],
-            [0.1, 0.2, 0.3],
-            [0.1, 0.2, 0.3],
-            [0.1, 0.2, 0.3], 
-            [0.1, 0.2, 0.3]] # added an additional row of weights for bias
-        )
+        # self.weight = np.array(
+        #     [[0.1, 0.2, 0.3],
+        #     [0.1, 0.2, 0.3],
+        #     [0.1, 0.2, 0.3],
+        #     [0.1, 0.2, 0.3], 
+        #     [0.1, 0.2, 0.3]] # added an additional row of weights for bias
+        # )
+
+        # xavier/glorot initialization
+        fan_in = X.shape[1]  # Number of input units (features + 1 for bias)
+        fan_out = len(np.unique(y))  # Number of output units (number of classes)
+
+        limit = np.sqrt(len(np.unique(y))/ (fan_in + fan_out))
+        self.weight = np.random.uniform(-limit, limit, size=(fan_in, fan_out))
 
     def one_hot_encoding(self, y):
         """
@@ -40,6 +49,7 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         """
         c = len(np.unique(y))
         y_encoded = np.zeros((len(y), c))
+        y = y.astype(int)
         y_encoded[np.arange(len(y)), y] = 1
 
         return y_encoded
@@ -72,14 +82,14 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
             Ti = self.one_hot_encoding(y)
             Z = np.matmul(X, self.weight)
             Oi = self.softmax(Z)
-            erro = self.function_cost_J(n, Ti, Oi)
+            error = self.function_cost_J(n, Ti, Oi)
             gradient = self.cost_derivate_gradient(n, Ti, Oi, X)
             self.weight = self.weight - self.learningRate * gradient
             if epochCount % 100 == 0:
-                totalError.append(erro)
+                totalError.append(error)
                 gradientE.append(gradient)
                 v_epochs.append(epochCount)
-                print("Epoch ", epochCount, " Total Error:", "%.4f" % erro)
+                print("Epoch ", epochCount, " Total Error:", "%.4f" % error)
 
             epochCount += 1
 
@@ -87,32 +97,90 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X, y):
-        acc_set = acc_vers = acc_virg = 0
+        acc_euth = 0
+        acc_adoption = 0
+        acc_foster = 0
+        acc_return = 0
+        acc_transfer = 0
+        acc_no_outcome = 0
+
         v_resp = []
         n = len(y)
         Z = np.matmul(X, self.weight)
         Oi = self.softmax(Z)
-        prevision = np.argmax(Oi, axis=1)
-        # self.show_probability(Oi)
-        # print("")
-        procent = sum(prevision == y) / n
+        prediction = np.argmax(Oi, axis=1)
+
+        percent = sum(prediction == y) / n
         # print(" ID-Sample  | Class Classification |  Output |   Hoped output  ")
-        # for i in range(len(prevision)):
-        #     if(prevision[i] == 0): print(" id :",i,"          | Iris-Setosa        |  Output:",prevision[i],"   |",y[i])
-        #     elif(prevision[i] == 1): print(" id :",i,"          | Iris-Versicolour   |  Output:",prevision[i],"   |",y[i])
-        #     elif(prevision[i] == 2): print(" id :",i,"          | Iris-Virginica     |  Output:",prevision[i],"   |",y[i])
+        for i in range(len(prediction)):
+            if(prediction[i] == 0): print(" id :",i,"    | Euthanasia |  Output:",prediction[i],"   |",y[i])
+            elif(prediction[i] == 1): print(" id :",i,"    | Adoption   |  Output:",prediction[i],"   |",y[i])
+            elif(prediction[i] == 2): print(" id :",i,"    | Foster     |  Output:",prediction[i],"   |",y[i])
+            elif(prediction[i] == 3): print(" id :",i,"    | Return     |  Output:",prediction[i],"   |",y[i])
+            elif(prediction[i] == 4): print(" id :",i,"    | Transfer   |  Output:",prediction[i],"   |",y[i])
+            elif(prediction[i] == 5): print(" id :",i,"    | Non-Outcome|  Output:",prediction[i],"   |",y[i])
 
-        for i in range(len(prevision)):
-            if (prevision[i] == y[i]) and (prevision[i] == 0):
-                acc_set += 1
-            elif (prevision[i] == y[i]) and (prevision[i] == 1):
-                acc_vers += 1
-            elif (prevision[i] == y[i]) and (prevision[i] == 2):
-                acc_virg += 1
+        for i in range(len(prediction)):
+            if (prediction[i] == y[i]) and (prediction[i] == 0):
+                acc_euth += 1
+            elif (prediction[i] == y[i]) and (prediction[i] == 1):
+                acc_adoption += 1
+            elif (prediction[i] == y[i]) and (prediction[i] == 2):
+                acc_foster += 1
+            elif (prediction[i] == y[i]) and (prediction[i] == 3):
+                acc_return += 1
+            elif (prediction[i] == y[i]) and (prediction[i] == 4):
+                acc_transfer += 1
+            elif (prediction[i] == y[i]) and (prediction[i] == 5):
+                acc_no_outcome += 1
 
-        correct = procent * 100
+        # add confusion matrix
+        unique_labels = np.unique(np.concatenate([y, prediction]))
+        cm = confusion_matrix(y, prediction, labels=unique_labels)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=unique_labels)
+        disp.plot()
+        plt.show()
+
+        correct = percent * 100
         incorrect = 100 - correct
         v_resp.append(correct)
         v_resp.append(incorrect)
-        # self.accuracy_graphic(v_resp)
-        return "%.2f" % (correct), acc_set, acc_vers, acc_virg
+
+        print("Percent Total Correct:", correct, 
+            "\nNum Correct Euth:", acc_euth, 
+            "\nNum Correct Adopt:", acc_adoption, 
+            "\nNum Correct Foster:", acc_foster,
+            "\nNum Correct Return to Owner:", acc_return,
+            "\nNum Correct Transfer:", acc_transfer,
+            "\nNum Correct No Outcome:", acc_no_outcome)
+        return 
+
+        # acc_set = acc_vers = acc_virg = 0
+        # v_resp = []
+        # n = len(y)
+        # Z = np.matmul(X, self.weight)
+        # Oi = self.softmax(Z)
+        # prediction = np.argmax(Oi, axis=1)
+        # # self.show_probability(Oi)
+        # # print("")
+        # procent = sum(prediction == y) / n
+        # # print(" ID-Sample  | Class Classification |  Output |   Hoped output  ")
+        # # for i in range(len(prediction)):
+        # #     if(prediction[i] == 0): print(" id :",i,"          | Iris-Setosa        |  Output:",prediction[i],"   |",y[i])
+        # #     elif(prediction[i] == 1): print(" id :",i,"          | Iris-Versicolour   |  Output:",prediction[i],"   |",y[i])
+        # #     elif(prediction[i] == 2): print(" id :",i,"          | Iris-Virginica     |  Output:",prediction[i],"   |",y[i])
+
+        # for i in range(len(prediction)):
+        #     if (prediction[i] == y[i]) and (prediction[i] == 0):
+        #         acc_set += 1
+        #     elif (prediction[i] == y[i]) and (prediction[i] == 1):
+        #         acc_vers += 1
+        #     elif (prediction[i] == y[i]) and (prediction[i] == 2):
+        #         acc_virg += 1
+
+        # correct = procent * 100
+        # incorrect = 100 - correct
+        # v_resp.append(correct)
+        # v_resp.append(incorrect)
+        # # self.accuracy_graphic(v_resp)
+        # return "%.2f" % (correct), acc_set, acc_vers, acc_virg
