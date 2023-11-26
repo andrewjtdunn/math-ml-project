@@ -38,7 +38,13 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         Calculates and returns the softmax function
         Note: np.exp is e to a power
         """
-        return np.exp(z) / np.sum(np.exp(z), axis=0)
+        # return np.exp(z) / np.sum(np.exp(z), axis=0)
+
+        exp_mat = np.exp(z - np.max(z))
+        for i in range(len(z)):
+            exp_mat[i] /= np.sum(exp_mat[i])
+
+        return exp_mat
 
     def fit(self):
         epochCount = 0
@@ -77,9 +83,9 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
 
             epochCount += 1
 
-        # Print the weights and bias, which are saved within the class
-        print(f"{self.weights=}")
-        print(f"{self.bias=}")
+        # # Print the weights and bias, which are saved within the class
+        # print(f"{self.weights=}")
+        # print(f"{self.bias=}")
 
     def predict(self, X, y_actual):
         """ """
