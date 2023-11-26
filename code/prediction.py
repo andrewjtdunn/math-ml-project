@@ -111,7 +111,7 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         prediction = np.argmax(Oi, axis=1)
 
         percent = sum(prediction == y) / n
-        # print(" ID-Sample  | Class Classification |  Output |   Hoped output  ")
+        # print(" ID-Sample  | Class Classification |  Predicted |   Actual  ")
         for i in range(len(prediction)):
             if(prediction[i] == 0): print(" id :",i,"    | Euthanasia |  Output:",prediction[i],"   |",y[i])
             elif(prediction[i] == 1): print(" id :",i,"    | Adoption   |  Output:",prediction[i],"   |",y[i])
@@ -146,6 +146,7 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
             "\nNum Correct Return to Owner:", acc_return,
             "\nNum Correct Transfer:", acc_transfer,
             "\nNum Correct No Outcome:", acc_no_outcome)
+
         # add confusion matrix
         unique_labels = np.unique(np.concatenate([y, prediction]))
         cm = confusion_matrix(y, prediction, labels=unique_labels)
