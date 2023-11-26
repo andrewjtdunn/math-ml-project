@@ -77,7 +77,7 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
 
             epochCount += 1
 
-        # Print the weights and based, which are saved within the class
+        # Print the weights and bias, which are saved within the class
         print(f"{self.weights=}")
         print(f"{self.bias=}")
 
