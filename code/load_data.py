@@ -1,18 +1,23 @@
 import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import StratifiedShuffleSplit
+from preprocess import load_shelter_data
 
 SEED = 123
 
 
-def load_data():
-    """ """
-
-    data = load_iris()
-    X = data["data"]
-    y = data["target"]
-
-    # print(data["target_names"])
+def load_data(param):
+    """
+    """
+    if param == 'iris':
+        data = load_iris()
+        X = data["data"]
+        y = data["target"]
+    
+    if param == 'austin_shelter_cats':
+        data = load_shelter_data()
+        X = data[:, 1:]
+        y = data[:, 0]
 
     return X, y
 
