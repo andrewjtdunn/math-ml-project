@@ -30,7 +30,7 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         # )
 
         # xavier/glorot initialization
-        fan_in = X.shape[1]  # Number of input units (features + 1 for bias)
+        fan_in = X.shape[1]  # Number of input units
         fan_out = len(np.unique(y))  # Number of output units (number of classes)
 
         limit = np.sqrt(len(np.unique(y))/ (fan_in + fan_out))
@@ -134,13 +134,6 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
             elif (prediction[i] == y[i]) and (prediction[i] == 5):
                 acc_no_outcome += 1
 
-        # add confusion matrix
-        unique_labels = np.unique(np.concatenate([y, prediction]))
-        cm = confusion_matrix(y, prediction, labels=unique_labels)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=unique_labels)
-        disp.plot()
-        plt.show()
-
         correct = percent * 100
         incorrect = 100 - correct
         v_resp.append(correct)
@@ -153,6 +146,13 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
             "\nNum Correct Return to Owner:", acc_return,
             "\nNum Correct Transfer:", acc_transfer,
             "\nNum Correct No Outcome:", acc_no_outcome)
+        # add confusion matrix
+        unique_labels = np.unique(np.concatenate([y, prediction]))
+        cm = confusion_matrix(y, prediction, labels=unique_labels)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=unique_labels)
+        disp.plot()
+        plt.show()
+
         return 
 
         # acc_set = acc_vers = acc_virg = 0
