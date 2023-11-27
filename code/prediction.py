@@ -1,100 +1,90 @@
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
+from sklearn.base import BaseEstimator, ClassifierMixin
+
+SEED = 123
 
 
 class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
-    def __init__(self, X, y, learningRate=0.005, max_epoch=3000):
+    def __init__(self, learning_rate=0.005, max_epoch=3000):
         """ """
 
-        self.learningRate = learningRate
+        self.learning_rate = learning_rate
         self.max_epoch = max_epoch
-        self.X = X
-        self.y = y
 
-        # What is this and how is it used?
-        # 4x3 array - each row corresponds to weights for a specific feature (4)
-        # each column corresponds to weights for a specific class (3 classes)
-        # weights are randomly initalized or set to small values close to zero,
-        # but different methods for initialization can
-        # lead to different results, so the process of weight initalization is
-        # commonly explored / experimented with
-
-        # self.weight = np.array(
-        #     [[0.1, 0.2, 0.3],
-        #     [0.1, 0.2, 0.3],
-        #     [0.1, 0.2, 0.3],
-        #     [0.1, 0.2, 0.3],
-        #     [0.1, 0.2, 0.3]] # added an additional row of weights for bias
-        # )
-
-        # xavier/glorot initialization
-        fan_in = X.shape[1]  # Number of input units
-        fan_out = len(np.unique(y))  # Number of output units (number of classes)
-
-        limit = np.sqrt(len(np.unique(y)) / (fan_in + fan_out))
-        self.weight = np.random.uniform(-limit, limit, size=(fan_in, fan_out))
-
-    def one_hot_encoding(self, y):
+    def one_hot_encoding(self, y, c):
         """
         Generates one-hot encoding in a matrix
 
         Inputs:
             y (np array): array with multiple classes to predict
+            c (int): number of unique values in c
 
         Returns:
             y_encoded (np array): array with a column for every class, and
             a 1 for codings of that class, 0 otherwise
         """
-        c = len(np.unique(y))
+
         y_encoded = np.zeros((len(y), c))
         y = y.astype(int)
         y_encoded[np.arange(len(y)), y] = 1
 
         return y_encoded
 
-    def cost_derivate_gradient(self, n, Ti, Oi, X):
-        result = -(np.dot(X.T, (Ti - Oi))) / n
-        return result
-
-    def function_cost_J(self, n, Ti, Oi):
-        result = -(np.sum(Ti * np.log(Oi))) / n
-        return result
-
     def softmax(self, z):
         """
         Calculates and returns the softmax function
         Note: np.exp is e to a power
         """
-        # return np.exp(z) / np.sum(np.exp(z), axis=0)
+        exp_mat = np.exp(z - np.max(z)) / np.sum(
+            np.exp(z - np.max(z)), axis=1, keepdims=True
+        )
 
-        return (np.exp(z).T / np.sum(np.exp(z), axis=1)).T
+        return exp_mat
 
     def fit(self, X, y):
-        epochCount = 0
-        n = len(X)
-        gradientE = []
-        v_epochs = []
-        totalError = []
+        """
+        to do: complete doc string
+        """
+        loss_array = []
 
-        while epochCount < self.max_epoch:
-            Ti = self.one_hot_encoding(y)
-            Z = np.matmul(X, self.weight)
-            Oi = self.softmax(Z)
-            error = self.function_cost_J(n, Ti, Oi)
-            gradient = self.cost_derivate_gradient(n, Ti, Oi, X)
-            self.weight = self.weight - self.learningRate * gradient
-            if epochCount % 100 == 0:
-                totalError.append(error)
-                gradientE.append(gradient)
-                v_epochs.append(epochCount)
-                print("Epoch ", epochCount, " Total Error:", "%.4f" % error)
+        # define key matrix values
+        c = len(np.unique(y))
+        n, p = X.shape
 
-            epochCount += 1
+        # set seed in numpy random
+        np.random.seed(SEED)
 
-        # self.show_err_graphic(v_epochs,totalError)
-        return self
+        # initialize weights at random values
+        self.weights = np.random.random((p, c))
+        self.bias = np.random.random(c)
+
+        for epoch in range(self.max_epoch):
+            z = X @ self.weights + self.bias
+
+            weights_gradient = (1 / n) * np.dot(
+                X.T, self.softmax(z) - self.one_hot_encoding(y, c)
+            )
+
+            bias_gradient = (1 / n) * np.sum(
+                self.softmax(z) - self.one_hot_encoding(y, c)
+            )
+
+            self.weights = self.weights - self.learning_rate * weights_gradient
+            self.bias = self.bias - self.learning_rate * bias_gradient
+
+            # Computing the loss
+            loss = -np.mean(np.log(self.softmax(z)[np.arange(len(y)), y]))
+            loss_array.append(loss)
+
+            if epoch % 100 == 0:
+                print("Epoch: {} , Loss: {}".format(epoch, loss))
+
+        # # Print the weights and bias, which are saved within the class
+        # print(f"{self.weights=}")
+        # print(f"{self.bias=}")
+        print("Weights and bias are updated")
 
     def predict(self, X, y):
         acc_euth = 0
@@ -106,9 +96,10 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
 
         v_resp = []
         n = len(y)
-        Z = np.matmul(X, self.weight)
-        Oi = self.softmax(Z)
-        prediction = np.argmax(Oi, axis=1)
+
+        z = X @ self.weights + self.bias
+        y_hat = self.softmax(z)
+        prediction = np.argmax(y_hat, axis=1)
 
         percent = sum(prediction == y) / n
         # print(" ID-Sample  | Class Classification |  Predicted |   Actual  ")
@@ -212,33 +203,3 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         plt.show()
 
         return
-
-        # acc_set = acc_vers = acc_virg = 0
-        # v_resp = []
-        # n = len(y)
-        # Z = np.matmul(X, self.weight)
-        # Oi = self.softmax(Z)
-        # prediction = np.argmax(Oi, axis=1)
-        # # self.show_probability(Oi)
-        # # print("")
-        # procent = sum(prediction == y) / n
-        # # print(" ID-Sample  | Class Classification |  Output |   Hoped output  ")
-        # # for i in range(len(prediction)):
-        # #     if(prediction[i] == 0): print(" id :",i,"          | Iris-Setosa        |  Output:",prediction[i],"   |",y[i])
-        # #     elif(prediction[i] == 1): print(" id :",i,"          | Iris-Versicolour   |  Output:",prediction[i],"   |",y[i])
-        # #     elif(prediction[i] == 2): print(" id :",i,"          | Iris-Virginica     |  Output:",prediction[i],"   |",y[i])
-
-        # for i in range(len(prediction)):
-        #     if (prediction[i] == y[i]) and (prediction[i] == 0):
-        #         acc_set += 1
-        #     elif (prediction[i] == y[i]) and (prediction[i] == 1):
-        #         acc_vers += 1
-        #     elif (prediction[i] == y[i]) and (prediction[i] == 2):
-        #         acc_virg += 1
-
-        # correct = procent * 100
-        # incorrect = 100 - correct
-        # v_resp.append(correct)
-        # v_resp.append(incorrect)
-        # # self.accuracy_graphic(v_resp)
-        # return "%.2f" % (correct), acc_set, acc_vers, acc_virg
