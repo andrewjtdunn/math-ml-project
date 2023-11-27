@@ -73,9 +73,8 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
 
             self.weights = self.weights - self.learning_rate * weights_gradient
             self.bias = self.bias - self.learning_rate * bias_gradient
-
-            # Computing the loss
-            loss = -np.mean(np.log(self.softmax(z)[np.arange(len(y)), y]))
+            
+            loss = -np.mean(np.log(self.softmax(z)[np.arange(len(y)), y.astype(int)]))
             loss_array.append(loss)
 
             if epoch % 100 == 0:
