@@ -82,6 +82,7 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         # # Print the weights and bias, which are saved within the class
         # print(f"{self.weights=}")
         # print(f"{self.bias=}")
+        print("Weights and bias are updated")
 
     def predict(self, X, y_actual):
         """ """
