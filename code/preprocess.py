@@ -125,13 +125,7 @@ def load_shelter_data():
                            (intake_outcome_df.loc[:,'Intake Condition'] == 'Panleuk') |
                            (intake_outcome_df.loc[:,'Intake Condition'] == 'Agonal')
                            ) , 'Cond Med'] = 1
-    # intake_outcome_df.loc[(intake_outcome_df.loc[:,'Intake Condition'] == 'Med Urgent'), 'Cond Med'] = 1
-    # intake_outcome_df.loc[(intake_outcome_df.loc[:,'Intake Condition'] == 'Medical'), 'Cond Med'] = 1
-    # intake_outcome_df.loc[(intake_outcome_df.loc[:,'Intake Condition'] == 'Injured'), 'Cond Med'] = 1
-    # intake_outcome_df.loc[(intake_outcome_df.loc[:,'Intake Condition'] == 'Neurologic'), 'Cond Med'] = 1
-    # intake_outcome_df.loc[(intake_outcome_df.loc[:,'Intake Condition'] == 'Sick'), 'Cond Med'] = 1
-    # intake_outcome_df.loc[(intake_outcome_df.loc[:,'Intake Condition'] == 'Panleuk'), 'Cond Med'] = 1
-    # intake_outcome_df.loc[(intake_outcome_df.loc[:,'Intake Condition'] == 'Agonal'), 'Cond Med'] = 1
+
     intake_outcome_df.loc[(intake_outcome_df.loc[:,'Intake Condition'] == 'Behavior'), 'Cond Behavior'] = 1
     intake_outcome_df.loc[(intake_outcome_df.loc[:,'Intake Condition'] == 'Space'), 'Cond Other'] = 1
     intake_outcome_df.loc[(intake_outcome_df.loc[:,'Intake Condition'] == 'Unknown'), 'Cond Other'] = 1
