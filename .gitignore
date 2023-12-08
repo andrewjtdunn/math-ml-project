@@ -1,2 +1,7 @@
 
-code/multinomial logistic regression.ipynb
+code/__pycache__/load_data.cpython-311.pyc
+code/.DS_Store
+code/__pycache__/prediction.cpython-311.pyc
+code/__pycache__/preprocess.cpython-311.pyc
+code/__pycache__/process_data.cpython-311.pyc
+code/__pycache__/visualizations.cpython-311.pyc
