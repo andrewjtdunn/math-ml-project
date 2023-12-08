@@ -5,3 +5,5 @@ code/__pycache__/prediction.cpython-311.pyc
 code/__pycache__/preprocess.cpython-311.pyc
 code/__pycache__/process_data.cpython-311.pyc
 code/__pycache__/visualizations.cpython-311.pyc
+images/.DS_Store
+.DS_Store
