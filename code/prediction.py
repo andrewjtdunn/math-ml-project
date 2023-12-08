@@ -1,15 +1,21 @@
 import numpy as np
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
 from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.metrics import (
+    accuracy_score,
+    balanced_accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+)
 
 SEED = 123
 
 
 class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
-    def __init__(self, learning_rate=0.005, max_epoch=3000):
+    def __init__(self, verbose=False, learning_rate=0.005, max_epoch=3000):
         """ """
 
+        self.verbose = verbose
         self.learning_rate = learning_rate
         self.max_epoch = max_epoch
 
@@ -73,12 +79,13 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
 
             self.weights = self.weights - self.learning_rate * weights_gradient
             self.bias = self.bias - self.learning_rate * bias_gradient
-            
+
             loss = -np.mean(np.log(self.softmax(z)[np.arange(len(y)), y.astype(int)]))
             loss_array.append(loss)
 
-            if epoch % 100 == 0:
-                print("Epoch: {} , Loss: {}".format(epoch, loss))
+            if self.verbose:
+                if epoch % 100 == 0:
+                    print("Epoch: {} , Loss: {}".format(epoch, loss))
 
         # # Print the weights and bias, which are saved within the class
         # print(f"{self.weights=}")
@@ -86,13 +93,6 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         print("Weights and bias are updated")
 
     def predict(self, X, y):
-        acc_euth = 0
-        acc_adoption = 0
-        acc_foster = 0
-        acc_return = 0
-        acc_transfer = 0
-        acc_no_outcome = 0
-
         v_resp = []
         n = len(y)
 
@@ -100,105 +100,15 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         y_hat = self.softmax(z)
         prediction = np.argmax(y_hat, axis=1)
 
-        percent = sum(prediction == y) / n
-        # print(" ID-Sample  | Class Classification |  Predicted |   Actual  ")
-        for i in range(len(prediction)):
-            if prediction[i] == 0:
-                print(
-                    " id :",
-                    i,
-                    "    | Euthanasia |  Output:",
-                    prediction[i],
-                    "   |",
-                    y[i],
-                )
-            elif prediction[i] == 1:
-                print(
-                    " id :",
-                    i,
-                    "    | Adoption   |  Output:",
-                    prediction[i],
-                    "   |",
-                    y[i],
-                )
-            elif prediction[i] == 2:
-                print(
-                    " id :",
-                    i,
-                    "    | Foster     |  Output:",
-                    prediction[i],
-                    "   |",
-                    y[i],
-                )
-            elif prediction[i] == 3:
-                print(
-                    " id :",
-                    i,
-                    "    | Return     |  Output:",
-                    prediction[i],
-                    "   |",
-                    y[i],
-                )
-            elif prediction[i] == 4:
-                print(
-                    " id :",
-                    i,
-                    "    | Transfer   |  Output:",
-                    prediction[i],
-                    "   |",
-                    y[i],
-                )
-            elif prediction[i] == 5:
-                print(
-                    " id :",
-                    i,
-                    "    | Non-Outcome|  Output:",
-                    prediction[i],
-                    "   |",
-                    y[i],
-                )
-
-        for i in range(len(prediction)):
-            if (prediction[i] == y[i]) and (prediction[i] == 0):
-                acc_euth += 1
-            elif (prediction[i] == y[i]) and (prediction[i] == 1):
-                acc_adoption += 1
-            elif (prediction[i] == y[i]) and (prediction[i] == 2):
-                acc_foster += 1
-            elif (prediction[i] == y[i]) and (prediction[i] == 3):
-                acc_return += 1
-            elif (prediction[i] == y[i]) and (prediction[i] == 4):
-                acc_transfer += 1
-            elif (prediction[i] == y[i]) and (prediction[i] == 5):
-                acc_no_outcome += 1
-
-        correct = percent * 100
+        accuracy_percent = sum(prediction == y) / n
+        correct = accuracy_percent * 100
         incorrect = 100 - correct
         v_resp.append(correct)
         v_resp.append(incorrect)
 
-        print(
-            "Percent Total Correct:",
-            correct,
-            "\nNum Correct Euth:",
-            acc_euth,
-            "\nNum Correct Adopt:",
-            acc_adoption,
-            "\nNum Correct Foster:",
-            acc_foster,
-            "\nNum Correct Return to Owner:",
-            acc_return,
-            "\nNum Correct Transfer:",
-            acc_transfer,
-            "\nNum Correct No Outcome:",
-            acc_no_outcome,
-        )
+        accuracy = balanced_accuracy_score(y, prediction)
+        precision = precision_score(y, prediction, average="weighted")
+        recall = recall_score(y, prediction, average="weighted")
+        f1 = f1_score(y, prediction, average="weighted")
 
-        # add confusion matrix
-        unique_labels = np.unique(np.concatenate([y, prediction]))
-        cm = confusion_matrix(y, prediction, labels=unique_labels)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=unique_labels)
-        disp.plot()
-        plt.show()
-
-        return
+        return prediction, accuracy_percent, accuracy, precision, recall, f1
