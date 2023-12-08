@@ -12,12 +12,15 @@ SEED = 123
 
 
 class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
-    def __init__(self, verbose=False, learning_rate=0.005, max_epoch=3000):
+    def __init__(
+        self, verbose=False, learning_rate=0.005, max_epoch=3000, epsilon=1e-500
+    ):
         """ """
 
         self.verbose = verbose
         self.learning_rate = learning_rate
         self.max_epoch = max_epoch
+        self.epsilon = epsilon
 
     def one_hot_encoding(self, y, c):
         """
@@ -77,8 +80,13 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
                 self.softmax(z) - self.one_hot_encoding(y, c)
             )
 
-            self.weights = self.weights - self.learning_rate * weights_gradient
+            weights_new = self.weights - self.learning_rate * weights_gradient
             self.bias = self.bias - self.learning_rate * bias_gradient
+
+            if np.abs(np.sum(weights_new - self.weights)) < self.epsilon:
+                break
+            else:
+                self.weights = weights_new
 
             loss = -np.mean(np.log(self.softmax(z)[np.arange(len(y)), y.astype(int)]))
             loss_array.append(loss)
@@ -107,9 +115,9 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         v_resp.append(correct)
         v_resp.append(incorrect)
 
-        accuracy = balanced_accuracy_score(y, prediction)
+        accuracy = accuracy_score(y, prediction)
         precision = precision_score(y, prediction, average="weighted")
         recall = recall_score(y, prediction, average="weighted")
         f1 = f1_score(y, prediction, average="weighted")
 
-        return prediction, accuracy_percent, accuracy, precision, recall, f1
+        return prediction, accuracy, precision, recall, f1
