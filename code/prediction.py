@@ -13,7 +13,7 @@ SEED = 123
 
 class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
     def __init__(
-        self, verbose=False, learning_rate=0.005, max_epoch=3000, epsilon=1e-500
+        self, verbose=False, learning_rate=0.005, max_epoch=3000, epsilon=1e-1000
     ):
         """ """
 
