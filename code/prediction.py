@@ -91,6 +91,7 @@ class Multinomial_Logistic_Regression(BaseEstimator, ClassifierMixin):
         # print(f"{self.weights=}")
         # print(f"{self.bias=}")
         print("Weights and bias are updated")
+        return loss_array
 
     def predict(self, X, y):
         v_resp = []
