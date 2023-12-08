@@ -245,6 +245,7 @@ def load_shelter_data():
     return df_cat_numeric.to_numpy()
 
 
+# Oversampling did not yield a more predictive model, so we excluded this method
 def over_sample_data(X, y, seed=123):
     """ """
     ros = RandomOverSampler(random_state=seed)
